@@ -1,122 +1,92 @@
-import React, { useState } from "react";
 
-export default function App() {
-  const [length, setLength] = useState(12);
-  const [includeUpper, setIncludeUpper] = useState(true);
-  const [includeLower, setIncludeLower] = useState(true);
-  const [includeNumbers, setIncludeNumbers] = useState(true);
-  const [includeSymbols, setIncludeSymbols] = useState(false);
-  const [password, setPassword] = useState("");
+import { useState, useCallback, useEffect } from "react";
 
-  const upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const lowerCase = "abcdefghijklmnopqrstuvwxyz";
-  const numbers = "0123456789";
-  const symbols = "!@#$%^&*()_+[]{}<>?/";
+function App() {
+  const [length, setlength] = useState(8);
+  const [numberAllowed, setnumberAllowed] = useState(false);
+  const [CharacterAllowed, setcharacterAllowed] = useState(false);
+  const [password, setpassword] = useState ("");
+  
+  const passwordGenerator = useCallback(() =>{
+    let pass = ""
+    let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" 
 
-  const generatePassword = () => {
-    let chars = "";
-    if (includeUpper) chars += upperCase;
-    if (includeLower) chars += lowerCase;
-    if (includeNumbers) chars += numbers;
-    if (includeSymbols) chars += symbols;
+    if (numberAllowed) str+= "0123456789"
+    if (CharacterAllowed) str+= "!@$%&{}"
 
-    if (chars === "") {
-      alert("Please select at least one option!");
-      return;
+    for (let i=1; i<=length; i++){
+
+      let char =Math.floor(Math.random() * str.length +1)
+
+      pass += str.charAt(char)
     }
 
-    let newPassword = "";
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * chars.length);
-      newPassword += chars[randomIndex];
-    }
-    setPassword(newPassword);
-  };
+    setpassword(pass)
 
-  const copyToClipboard = () => {
-    if (password) {
-      navigator.clipboard.writeText(password);
-      alert("Password copied to clipboard!");
-    }
-  };
+
+
+
+  }, [length, numberAllowed, CharacterAllowed, setpassword])
+
+  useEffect (() => {
+    passwordGenerator()
+  }, [length, numberAllowed, CharacterAllowed, passwordGenerator])
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900">
-      <div className="bg-gray-800 p-6 rounded-2xl shadow-lg w-full max-w-md text-white">
-        <h1 className="text-2xl font-bold text-center mb-4">🔑 Password Generator</h1>
+    <>
+      <div className="w-full max-w-md mx-auto shadow-mg rounded-lg
+      px-4 my-8 text-orange-500 bg-gray-800">
+        <h1 className="text-4xl text-center text-white my-3">Password Generator</h1>
 
-        {/* Generated password box */}
-        <div className="flex items-center justify-between bg-gray-700 p-3 rounded-xl mb-4">
-          <span className="break-all">{password || "Your password will appear here"}</span>
-          <button
-            onClick={copyToClipboard}
-            className="ml-2 bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-lg text-sm"
-          >
-            Copy
-          </button>
+        <div className="flex shadow rounded-lg overflow-hidden mb-4">
+          <input 
+          type="text" 
+          value={password} 
+          className="outline-none w-full 
+          py-1 px-3"
+          placeholder="password" 
+          readOnly
+           />
+
+          <button className="outline-none bg-blue-700 text-white 
+          px-3 py-0.5 shrink-0 ">copy</button>
+
         </div>
 
-        {/* Password length */}
-        <div className="mb-4">
-          <label className="block mb-2">Password Length: {length}</label>
-          <input
+        <div className="flex text-5m gap-x-2">
+          <div className="flex item-center gap-x-1">
+            <input 
             type="range"
-            min="6"
-            max="32"
+            min={6}
+            max={100}
             value={length}
-            onChange={(e) => setLength(e.target.value)}
-            className="w-full"
-          />
+            className="cursor-pointer"
+            onChange={(e) => {setlength(e.target.value)}}
+            />
+            <label>length :{length}</label>
+          </div>
+          <div className="flex item-center gap-x-1">
+            <input 
+            type="checkbox"
+            checked={numberAllowed}
+            onChange={(e) => {setnumberAllowed(e.target.checked)}}
+            />
+            <label>Numbers</label>
+          </div>
+          <div className="flex item-center gap-x-1">
+            <input 
+            type="checkbox"
+            checked={CharacterAllowed}
+            onChange={(e) => {setcharacterAllowed(e.target.checked)}}
+            />
+            <label>Characters</label>
+          </div>
         </div>
-
-        {/* Options */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <label>
-            <input
-              type="checkbox"
-              checked={includeUpper}
-              onChange={() => setIncludeUpper(!includeUpper)}
-              className="mr-2"
-            />
-            Uppercase
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={includeLower}
-              onChange={() => setIncludeLower(!includeLower)}
-              className="mr-2"
-            />
-            Lowercase
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={includeNumbers}
-              onChange={() => setIncludeNumbers(!includeNumbers)}
-              className="mr-2"
-            />
-            Numbers
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={includeSymbols}
-              onChange={() => setIncludeSymbols(!includeSymbols)}
-              className="mr-2"
-            />
-            Symbols
-          </label>
-        </div>
-
-        {/* Generate button */}
-        <button
-          onClick={generatePassword}
-          className="w-full bg-green-500 hover:bg-green-600 py-2 rounded-xl font-semibold"
-        >
-          Generate Password
-        </button>
+        <button onClick={passwordGenerator} className="mt-4 bg-blue-500 
+        text-white py-2 px-4 rounded">Generate Password</button>
       </div>
-    </div>
+    
+    </>
   );
 }
+export default App;
